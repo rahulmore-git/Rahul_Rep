@@ -70,8 +70,8 @@ function createProductCard(product) {
             <div class="product-body">
                 <div class="product-info">
                     <div class="info-item">
-                        <span class="info-label">Quantity:</span>
-                        <span class="info-value">${product.quantity || 0}</span>
+                        <span class="info-label">User:</span>
+                        <span class="info-value">${product.user || 'N/A'}</span>
                     </div>
                     ${product.description ? `
                     <div class="info-item">

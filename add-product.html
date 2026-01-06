@@ -43,8 +43,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="quantity">Quantity *</label>
-                    <input type="number" id="quantity" name="quantity" required min="0" placeholder="e.g., 5">
+                    <label for="user">User *</label>
+                    <input type="text" id="user" name="user" required placeholder="e.g., John Doe">
                 </div>
 
                 <div class="form-group">
@@ -73,7 +73,7 @@
                 id: Date.now(), // Simple ID generation
                 name: document.getElementById('name').value.trim(),
                 category: document.getElementById('category').value,
-                quantity: parseInt(document.getElementById('quantity').value),
+                user: document.getElementById('user').value.trim(),
                 description: document.getElementById('description').value.trim(),
                 dateAdded: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
             };

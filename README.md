@@ -18,7 +18,7 @@ A simple web application for managing IT product inventory. This MVP (Minimum Vi
 
 1. **Add a Product:**
    - Click "Add New Product" from the home page
-   - Fill in the product details (Name, Category, Quantity, Description)
+   - Fill in the product details (Name, Category, User, Description)
    - Click "Save Product"
 
 2. **View Inventory:**
@@ -29,7 +29,7 @@ A simple web application for managing IT product inventory. This MVP (Minimum Vi
 
 - **Product Name** (required) - Name of the IT product
 - **Category** (required) - Type of product (Laptop, Monitor, Keyboard, etc.)
-- **Quantity** (required) - Number of items in stock
+- **User** (required) - User name assigned to the product
 - **Description** (optional) - Additional details about the product
 
 ## Technical Details

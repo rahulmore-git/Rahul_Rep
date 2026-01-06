@@ -68,11 +68,17 @@ function getTotalProductCount() {
 }
 
 /**
- * Get total quantity of all items
- * @returns {number} Sum of all product quantities
+ * Get total number of users
+ * @returns {number} Count of unique users
  */
 function getTotalItemCount() {
     const products = getAllProducts();
-    return products.reduce((total, product) => total + (product.quantity || 0), 0);
+    const users = new Set();
+    products.forEach(product => {
+        if (product.user) {
+            users.add(product.user);
+        }
+    });
+    return users.size;
 }
 

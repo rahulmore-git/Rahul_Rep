@@ -12,7 +12,7 @@ A simple web application for storing and managing IT product inventory with mini
 ## Product Fields (Minimal)
 - Product Name (required)
 - Category (e.g., Laptop, Monitor, Keyboard, etc.)
-- Quantity (required)
+- User (required)
 - Description (optional)
 - Date Added (auto-generated)
 
