@@ -35,11 +35,71 @@
         </main>
     </div>
 
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Product</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="edit-form" class="product-form" onsubmit="handleEditSubmit(event); return false;">
+                <input type="hidden" id="edit-id" name="id">
+                
+                <div class="form-group">
+                    <label for="edit-name">Product Name *</label>
+                    <input type="text" id="edit-name" name="name" required placeholder="e.g., Dell XPS 13 Laptop">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-category">Category *</label>
+                    <select id="edit-category" name="category" required>
+                        <option value="">Select a category</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Desktop">Desktop</option>
+                        <option value="Monitor">Monitor</option>
+                        <option value="Keyboard">Keyboard</option>
+                        <option value="Mouse">Mouse</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Network Device">Network Device</option>
+                        <option value="Server">Server</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-user">User *</label>
+                    <input type="text" id="edit-user" name="user" required placeholder="e.g., John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-description">Description</label>
+                    <textarea id="edit-description" name="description" rows="4" placeholder="Optional: Add product details, specifications, or notes"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Product</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Message container for inventory page -->
+    <div id="message" class="message" style="display: none;"></div>
+
     <script src="js/storage.js"></script>
     <script src="js/app.js"></script>
     <script>
         // Load and display inventory on page load
         displayInventory();
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('edit-modal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        }
     </script>
 </body>
 </html>

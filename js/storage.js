@@ -49,6 +49,28 @@ function getProductById(id) {
 }
 
 /**
+ * Update an existing product
+ * @param {number} id - Product ID
+ * @param {Object} updatedProduct - Updated product object
+ * @returns {boolean} Success status
+ */
+function updateProduct(id, updatedProduct) {
+    const products = getAllProducts();
+    const index = products.findIndex(p => p.id === id);
+    if (index === -1) return false;
+    
+    // Preserve the original ID and dateAdded, update other fields
+    products[index] = {
+        ...products[index],
+        ...updatedProduct,
+        id: id, // Ensure ID doesn't change
+        dateAdded: products[index].dateAdded // Preserve original date
+    };
+    
+    return saveAllProducts(products);
+}
+
+/**
  * Delete a product by ID
  * @param {number} id - Product ID
  * @returns {boolean} Success status
