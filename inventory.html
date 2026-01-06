@@ -21,7 +21,10 @@
         <main>
             <div class="page-header">
                 <h2>Inventory</h2>
-                <a href="add-product.html" class="btn btn-primary">➕ Add Product</a>
+                <div class="page-actions">
+                    <button onclick="exportToExcel()" class="btn btn-secondary" id="export-btn">📊 Export to Excel</button>
+                    <a href="add-product.html" class="btn btn-primary">➕ Add Product</a>
+                </div>
             </div>
 
             <div id="inventory-container">

@@ -257,6 +257,13 @@ main h2 {
     gap: 20px;
 }
 
+.page-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
 /* Inventory List */
 .inventory-list {
     margin-top: 20px;
@@ -414,6 +421,15 @@ main h2 {
     .page-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .page-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .page-actions .btn {
+        width: 100%;
     }
 
     .products-grid {

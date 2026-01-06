@@ -192,11 +192,82 @@ function confirmDelete(productId) {
     }
 }
 
+/**
+ * Export inventory data to Excel (CSV format)
+ */
+function exportToExcel() {
+    const products = getAllProducts();
+    
+    if (products.length === 0) {
+        showMessage('No products to export', 'error');
+        return;
+    }
+
+    // Create CSV content
+    const headers = ['ID', 'Product Name', 'Category', 'User', 'Description', 'Date Added'];
+    const csvRows = [headers.join(',')];
+
+    products.forEach(product => {
+        const row = [
+            product.id || '',
+            escapeCsvField(product.name || ''),
+            escapeCsvField(product.category || ''),
+            escapeCsvField(product.user || ''),
+            escapeCsvField(product.description || ''),
+            product.dateAdded || ''
+        ];
+        csvRows.push(row.join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+    
+    // Add BOM for UTF-8 (helps Excel recognize encoding)
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create download link
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Generate filename with current date
+    const date = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `inventory_export_${date}.csv`);
+    
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showMessage('Inventory exported successfully!', 'success');
+}
+
+/**
+ * Escape CSV field to handle commas, quotes, and newlines
+ * @param {string} field - Field value to escape
+ * @returns {string} Escaped field value
+ */
+function escapeCsvField(field) {
+    if (field === null || field === undefined) {
+        return '';
+    }
+    
+    const stringField = String(field);
+    
+    // If field contains comma, quote, or newline, wrap in quotes and escape quotes
+    if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+        return '"' + stringField.replace(/"/g, '""') + '"';
+    }
+    
+    return stringField;
+}
+
 // Make functions globally available
 window.openEditModal = openEditModal;
 window.closeEditModal = closeEditModal;
 window.confirmDelete = confirmDelete;
 window.handleEditSubmit = handleEditSubmit;
+window.exportToExcel = exportToExcel;
 
 /**
  * Update statistics on landing page
