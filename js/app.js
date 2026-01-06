@@ -262,12 +262,228 @@ function escapeCsvField(field) {
     return stringField;
 }
 
+/**
+ * Parse CSV content into array of objects
+ * @param {string} csvContent - CSV file content
+ * @returns {Array} Array of parsed objects
+ */
+function parseCSV(csvContent) {
+    const lines = csvContent.split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) {
+        return [];
+    }
+
+    // Remove BOM if present
+    lines[0] = lines[0].replace(/^\uFEFF/, '');
+    
+    // Parse header
+    const headers = parseCSVLine(lines[0]);
+    
+    // Expected headers (case-insensitive)
+    const expectedHeaders = ['id', 'product name', 'category', 'user', 'description', 'date added'];
+    const headerMap = {};
+    
+    headers.forEach((header, index) => {
+        const normalizedHeader = header.trim().toLowerCase();
+        const expectedIndex = expectedHeaders.indexOf(normalizedHeader);
+        if (expectedIndex !== -1) {
+            headerMap[expectedHeaders[expectedIndex]] = index;
+        }
+    });
+
+    // Parse data rows
+    const products = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values.length === 0 || values.every(v => !v.trim())) continue;
+        
+        const product = {
+            id: headerMap['id'] !== undefined ? parseInt(values[headerMap['id']]) || Date.now() + i : Date.now() + i,
+            name: headerMap['product name'] !== undefined ? values[headerMap['product name']].trim() : '',
+            category: headerMap['category'] !== undefined ? values[headerMap['category']].trim() : '',
+            user: headerMap['user'] !== undefined ? values[headerMap['user']].trim() : '',
+            description: headerMap['description'] !== undefined ? values[headerMap['description']].trim() : '',
+            dateAdded: headerMap['date added'] !== undefined ? values[headerMap['date added']].trim() : new Date().toISOString().split('T')[0]
+        };
+
+        // Validate required fields
+        if (!product.name || !product.category || !product.user) {
+            continue; // Skip invalid rows
+        }
+
+        products.push(product);
+    }
+
+    return products;
+}
+
+/**
+ * Parse a single CSV line handling quoted fields
+ * @param {string} line - CSV line to parse
+ * @returns {Array} Array of field values
+ */
+function parseCSVLine(line) {
+    const fields = [];
+    let currentField = '';
+    let insideQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+        
+        if (char === '"') {
+            if (insideQuotes && nextChar === '"') {
+                // Escaped quote
+                currentField += '"';
+                i++; // Skip next quote
+            } else {
+                // Toggle quote state
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === ',' && !insideQuotes) {
+            // Field separator
+            fields.push(currentField);
+            currentField = '';
+        } else {
+            currentField += char;
+        }
+    }
+    
+    // Add last field
+    fields.push(currentField);
+    
+    return fields;
+}
+
+/**
+ * Import data from Excel/CSV file
+ * @param {Event} event - File input change event
+ */
+function importFromExcel(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    // Check file extension
+    const fileName = file.name.toLowerCase();
+    if (!fileName.endsWith('.csv') && !fileName.endsWith('.xls') && !fileName.endsWith('.xlsx')) {
+        showMessage('Please select a CSV or Excel file (.csv, .xls, .xlsx)', 'error');
+        event.target.value = ''; // Reset file input
+        return;
+    }
+
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const csvContent = e.target.result;
+            const products = parseCSV(csvContent);
+
+            if (products.length === 0) {
+                showMessage('No valid products found in the file. Please check the format.', 'error');
+                event.target.value = ''; // Reset file input
+                return;
+            }
+
+            // Ask for confirmation
+            const importMode = confirm(
+                `Found ${products.length} product(s) to import.\n\n` +
+                `Choose:\n` +
+                `OK - Append to existing inventory\n` +
+                `Cancel - Replace existing inventory`
+            );
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            if (importMode) {
+                // Append mode - add new products
+                products.forEach(product => {
+                    // Check if product with same ID exists
+                    const existing = getProductById(product.id);
+                    if (existing) {
+                        // Generate new ID for duplicate
+                        product.id = Date.now() + Math.random();
+                    }
+                    
+                    if (saveProduct(product)) {
+                        successCount++;
+                    } else {
+                        errorCount++;
+                    }
+                });
+            } else {
+                // Replace mode - clear and add new products
+                const allProducts = getAllProducts();
+                if (allProducts.length > 0) {
+                    if (!confirm('This will delete all existing inventory. Are you sure?')) {
+                        event.target.value = ''; // Reset file input
+                        return;
+                    }
+                }
+
+                // Clear existing products
+                saveAllProducts([]);
+
+                // Add imported products
+                products.forEach(product => {
+                    if (saveProduct(product)) {
+                        successCount++;
+                    } else {
+                        errorCount++;
+                    }
+                });
+            }
+
+            // Refresh display
+            displayInventory();
+            
+            // Update stats if on index page
+            if (typeof updateStats === 'function') {
+                updateStats();
+            }
+
+            // Show result message
+            if (errorCount > 0) {
+                showMessage(`Import completed: ${successCount} added, ${errorCount} failed`, 'error');
+            } else {
+                showMessage(`Successfully imported ${successCount} product(s)!`, 'success');
+            }
+
+        } catch (error) {
+            console.error('Import error:', error);
+            showMessage('Error importing file: ' + error.message, 'error');
+        }
+
+        // Reset file input
+        event.target.value = '';
+    };
+
+    reader.onerror = function() {
+        showMessage('Error reading file. Please try again.', 'error');
+        event.target.value = ''; // Reset file input
+    };
+
+    // Read file as text (CSV) or binary (for Excel - would need a library for .xls/.xlsx)
+    if (fileName.endsWith('.csv')) {
+        reader.readAsText(file, 'UTF-8');
+    } else {
+        // For .xls/.xlsx files, we'll read as text and hope it's CSV format
+        // For proper Excel support, would need a library like SheetJS
+        showMessage('Please save your Excel file as CSV format for import, or use a CSV file directly.', 'error');
+        event.target.value = ''; // Reset file input
+        return;
+    }
+}
+
 // Make functions globally available
 window.openEditModal = openEditModal;
 window.closeEditModal = closeEditModal;
 window.confirmDelete = confirmDelete;
 window.handleEditSubmit = handleEditSubmit;
 window.exportToExcel = exportToExcel;
+window.importFromExcel = importFromExcel;
 
 /**
  * Update statistics on landing page
