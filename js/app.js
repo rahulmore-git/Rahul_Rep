@@ -211,8 +211,17 @@ function handleEditSubmit(e) {
     e.preventDefault();
 
     const productId = parseInt(document.getElementById('edit-id').value);
+    const productName = document.getElementById('edit-name').value.trim();
+    
+    // Check for duplicate name (excluding current product)
+    if (isDuplicateName(productName, productId)) {
+        showMessage('A product with this name already exists. Please use a different name.', 'error');
+        document.getElementById('edit-name').focus();
+        return;
+    }
+    
     const updatedProduct = {
-        name: document.getElementById('edit-name').value.trim(),
+        name: productName,
         category: document.getElementById('edit-category').value,
         user: document.getElementById('edit-user').value.trim(),
         description: document.getElementById('edit-description').value.trim()
@@ -515,6 +524,12 @@ function importFromExcel(event) {
                         product.id = generateUniqueId();
                     }
                     
+                    // Check for duplicate name
+                    if (isDuplicateName(product.name)) {
+                        errorCount++;
+                        return; // Skip this product
+                    }
+                    
                     if (saveProduct(product)) {
                         successCount++;
                     } else {
@@ -531,11 +546,30 @@ function importFromExcel(event) {
                     }
                 }
 
+                // Check for duplicate names within the import file itself
+                const nameSet = new Set();
+                const uniqueProducts = [];
+                const duplicateNames = [];
+
+                products.forEach(product => {
+                    const normalizedName = (product.name || '').trim().toLowerCase();
+                    if (nameSet.has(normalizedName)) {
+                        duplicateNames.push(product.name);
+                    } else {
+                        nameSet.add(normalizedName);
+                        uniqueProducts.push(product);
+                    }
+                });
+
+                if (duplicateNames.length > 0) {
+                    alert(`Found ${duplicateNames.length} duplicate name(s) in the import file. They will be skipped.\n\nDuplicates: ${duplicateNames.slice(0, 5).join(', ')}${duplicateNames.length > 5 ? '...' : ''}`);
+                }
+
                 // Clear existing products
                 saveAllProducts([]);
 
-                // Add imported products
-                products.forEach(product => {
+                // Add imported products (only unique ones)
+                uniqueProducts.forEach(product => {
                     if (saveProduct(product)) {
                         successCount++;
                     } else {

@@ -71,6 +71,28 @@ function getProductById(id) {
 }
 
 /**
+ * Check if a product name already exists (case-insensitive)
+ * @param {string} name - Product name to check
+ * @param {number} excludeId - Optional ID to exclude from check (for updates)
+ * @returns {boolean} True if duplicate exists, false otherwise
+ */
+function isDuplicateName(name, excludeId = null) {
+    if (!name || !name.trim()) {
+        return false;
+    }
+    
+    const products = getAllProducts();
+    const normalizedName = name.trim().toLowerCase();
+    
+    return products.some(product => {
+        const productName = (product.name || '').trim().toLowerCase();
+        const isDuplicate = productName === normalizedName;
+        const isExcluded = excludeId !== null && product.id === excludeId;
+        return isDuplicate && !isExcluded;
+    });
+}
+
+/**
  * Update an existing product
  * @param {number} id - Product ID
  * @param {Object} updatedProduct - Updated product object

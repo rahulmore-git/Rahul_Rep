@@ -70,9 +70,18 @@
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            const productName = document.getElementById('name').value.trim();
+            
+            // Check for duplicate name
+            if (isDuplicateName(productName)) {
+                showMessage('A product with this name already exists. Please use a different name.', 'error');
+                document.getElementById('name').focus();
+                return;
+            }
+            
             const product = {
                 id: generateUniqueId(), // Generate unique ID starting from 100
-                name: document.getElementById('name').value.trim(),
+                name: productName,
                 category: document.getElementById('category').value,
                 user: document.getElementById('user').value.trim(),
                 description: document.getElementById('description').value.trim(),
