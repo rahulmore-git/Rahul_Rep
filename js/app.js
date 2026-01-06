@@ -7,28 +7,13 @@
  * @param {string} searchQuery - Optional search query to filter products
  */
 function displayInventory(searchQuery = '') {
-    const products = getAllProducts();
     const container = document.getElementById('inventory-list');
     const emptyState = document.getElementById('empty-state');
 
     if (!container) return;
 
-    // Filter products based on search query
-    let filteredProducts = products;
-    if (searchQuery && searchQuery.trim() !== '') {
-        const query = searchQuery.toLowerCase().trim();
-        filteredProducts = products.filter(product => {
-            const name = (product.name || '').toLowerCase();
-            const category = (product.category || '').toLowerCase();
-            const user = (product.user || '').toLowerCase();
-            const description = (product.description || '').toLowerCase();
-            
-            return name.includes(query) || 
-                   category.includes(query) || 
-                   user.includes(query) || 
-                   description.includes(query);
-        });
-    }
+    // Get filtered products based on search query
+    const filteredProducts = getFilteredProducts(searchQuery);
 
     if (filteredProducts.length === 0) {
         if (emptyState) {
@@ -80,6 +65,32 @@ function displayInventory(searchQuery = '') {
 
     // Attach delete event listeners
     attachDeleteListeners();
+}
+
+/**
+ * Get filtered products based on search query
+ * @param {string} searchQuery - Search query string
+ * @returns {Array} Filtered products
+ */
+function getFilteredProducts(searchQuery = '') {
+    const products = getAllProducts();
+    
+    if (!searchQuery || searchQuery.trim() === '') {
+        return products;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return products.filter(product => {
+        const name = (product.name || '').toLowerCase();
+        const category = (product.category || '').toLowerCase();
+        const user = (product.user || '').toLowerCase();
+        const description = (product.description || '').toLowerCase();
+        
+        return name.includes(query) || 
+               category.includes(query) || 
+               user.includes(query) || 
+               description.includes(query);
+    });
 }
 
 /**
@@ -249,12 +260,21 @@ function confirmDelete(productId) {
 
 /**
  * Export inventory data to Excel (CSV format)
+ * Exports filtered results if search is active, otherwise exports all products
  */
 function exportToExcel() {
-    const products = getAllProducts();
+    // Check if there's an active search query
+    const searchInput = document.getElementById('search-input');
+    const searchQuery = searchInput ? searchInput.value.trim() : '';
+    
+    // Get filtered products based on search
+    const products = getFilteredProducts(searchQuery);
     
     if (products.length === 0) {
-        showMessage('No products to export', 'error');
+        const message = searchQuery 
+            ? 'No products found matching your search to export' 
+            : 'No products to export';
+        showMessage(message, 'error');
         return;
     }
 
@@ -285,16 +305,29 @@ function exportToExcel() {
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
     
-    // Generate filename with current date
+    // Generate filename with current date and search query if applicable
     const date = new Date().toISOString().split('T')[0];
-    link.setAttribute('download', `inventory_export_${date}.csv`);
+    let filename = 'inventory_export_';
+    
+    if (searchQuery) {
+        // Clean search query for filename (remove special characters)
+        const cleanQuery = searchQuery.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+        filename += `search_${cleanQuery}_${date}.csv`;
+    } else {
+        filename += `${date}.csv`;
+    }
+    
+    link.setAttribute('download', filename);
     
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    showMessage('Inventory exported successfully!', 'success');
+    const exportMessage = searchQuery 
+        ? `Exported ${products.length} filtered product(s) successfully!` 
+        : `Exported ${products.length} product(s) successfully!`;
+    showMessage(exportMessage, 'success');
 }
 
 /**
