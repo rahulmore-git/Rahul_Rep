@@ -3,6 +3,28 @@
  */
 
 const STORAGE_KEY = 'it_inventory_products';
+const STARTING_ID = 100;
+
+/**
+ * Generate the next unique ID starting from 100
+ * @returns {number} Next available unique ID
+ */
+function generateUniqueId() {
+    const products = getAllProducts();
+    
+    if (products.length === 0) {
+        return STARTING_ID;
+    }
+    
+    // Find the highest existing ID
+    const maxId = products.reduce((max, product) => {
+        const id = parseInt(product.id) || 0;
+        return id > max ? id : max;
+    }, STARTING_ID - 1);
+    
+    // Return the next ID (maxId + 1)
+    return maxId + 1;
+}
 
 /**
  * Get all products from localStorage

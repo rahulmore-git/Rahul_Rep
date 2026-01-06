@@ -381,12 +381,32 @@ function parseCSV(csvContent) {
 
     // Parse data rows
     const products = [];
+    const existingProducts = getAllProducts();
+    const existingIds = new Set(existingProducts.map(p => parseInt(p.id) || 0));
+    
     for (let i = 1; i < lines.length; i++) {
         const values = parseCSVLine(lines[i]);
         if (values.length === 0 || values.every(v => !v.trim())) continue;
         
+        // Get ID from CSV if available, otherwise generate new one
+        let productId;
+        if (headerMap['id'] !== undefined) {
+            const csvId = parseInt(values[headerMap['id']]);
+            // Only use CSV ID if it's valid and unique
+            if (csvId && csvId >= 100 && !existingIds.has(csvId)) {
+                productId = csvId;
+                existingIds.add(csvId); // Track to avoid duplicates in same import
+            } else {
+                productId = generateUniqueId();
+                existingIds.add(productId); // Track to avoid duplicates in same import
+            }
+        } else {
+            productId = generateUniqueId();
+            existingIds.add(productId); // Track to avoid duplicates in same import
+        }
+        
         const product = {
-            id: headerMap['id'] !== undefined ? parseInt(values[headerMap['id']]) || Date.now() + i : Date.now() + i,
+            id: productId,
             name: headerMap['product name'] !== undefined ? values[headerMap['product name']].trim() : '',
             category: headerMap['category'] !== undefined ? values[headerMap['category']].trim() : '',
             user: headerMap['user'] !== undefined ? values[headerMap['user']].trim() : '',
@@ -491,8 +511,8 @@ function importFromExcel(event) {
                     // Check if product with same ID exists
                     const existing = getProductById(product.id);
                     if (existing) {
-                        // Generate new ID for duplicate
-                        product.id = Date.now() + Math.random();
+                        // Generate new unique ID for duplicate
+                        product.id = generateUniqueId();
                     }
                     
                     if (saveProduct(product)) {

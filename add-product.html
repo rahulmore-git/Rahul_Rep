@@ -71,7 +71,7 @@
             e.preventDefault();
             
             const product = {
-                id: Date.now(), // Simple ID generation
+                id: generateUniqueId(), // Generate unique ID starting from 100
                 name: document.getElementById('name').value.trim(),
                 category: document.getElementById('category').value,
                 user: document.getElementById('user').value.trim(),
