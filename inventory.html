@@ -29,6 +29,11 @@
                 </div>
             </div>
 
+            <div class="search-container">
+                <input type="text" id="search-input" class="search-input" placeholder="🔍 Search by product name, category, user, or description..." onkeyup="handleSearch()">
+                <button onclick="clearSearch()" class="btn-clear-search" id="clear-search-btn" style="display: none;">✕ Clear</button>
+            </div>
+
             <div id="inventory-container">
                 <div id="empty-state" class="empty-state" style="display: none;">
                     <p>📦 No products in inventory yet.</p>

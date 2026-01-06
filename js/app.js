@@ -4,17 +4,38 @@
 
 /**
  * Display all products in the inventory list
+ * @param {string} searchQuery - Optional search query to filter products
  */
-function displayInventory() {
+function displayInventory(searchQuery = '') {
     const products = getAllProducts();
     const container = document.getElementById('inventory-list');
     const emptyState = document.getElementById('empty-state');
 
     if (!container) return;
 
-    if (products.length === 0) {
+    // Filter products based on search query
+    let filteredProducts = products;
+    if (searchQuery && searchQuery.trim() !== '') {
+        const query = searchQuery.toLowerCase().trim();
+        filteredProducts = products.filter(product => {
+            const name = (product.name || '').toLowerCase();
+            const category = (product.category || '').toLowerCase();
+            const user = (product.user || '').toLowerCase();
+            const description = (product.description || '').toLowerCase();
+            
+            return name.includes(query) || 
+                   category.includes(query) || 
+                   user.includes(query) || 
+                   description.includes(query);
+        });
+    }
+
+    if (filteredProducts.length === 0) {
         if (emptyState) {
             emptyState.style.display = 'block';
+            emptyState.innerHTML = searchQuery && searchQuery.trim() !== '' 
+                ? '<p>🔍 No products found matching your search.</p><button onclick="clearSearch()" class="btn btn-primary">Clear Search</button>'
+                : '<p>📦 No products in inventory yet.</p><a href="add-product.html" class="btn btn-primary">Add Your First Product</a>';
             container.style.display = 'none';
         }
         return;
@@ -24,7 +45,7 @@ function displayInventory() {
     container.style.display = 'block';
 
     // Group by category
-    const grouped = products.reduce((acc, product) => {
+    const grouped = filteredProducts.reduce((acc, product) => {
         const category = product.category || 'Uncategorized';
         if (!acc[category]) {
             acc[category] = [];
@@ -37,6 +58,11 @@ function displayInventory() {
     const sortedCategories = Object.keys(grouped).sort();
 
     let html = '';
+    
+    // Show search results count if searching
+    if (searchQuery && searchQuery.trim() !== '') {
+        html += `<div class="search-results-info">Found ${filteredProducts.length} product(s) matching "${escapeHtml(searchQuery)}"</div>`;
+    }
     
     sortedCategories.forEach(category => {
         html += `<div class="category-section">`;
@@ -54,6 +80,35 @@ function displayInventory() {
 
     // Attach delete event listeners
     attachDeleteListeners();
+}
+
+/**
+ * Handle search input
+ */
+function handleSearch() {
+    const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-search-btn');
+    const query = searchInput.value;
+
+    if (query && query.trim() !== '') {
+        clearBtn.style.display = 'inline-block';
+        displayInventory(query);
+    } else {
+        clearBtn.style.display = 'none';
+        displayInventory('');
+    }
+}
+
+/**
+ * Clear search and show all products
+ */
+function clearSearch() {
+    const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-search-btn');
+    
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    displayInventory('');
 }
 
 /**
@@ -484,6 +539,8 @@ window.confirmDelete = confirmDelete;
 window.handleEditSubmit = handleEditSubmit;
 window.exportToExcel = exportToExcel;
 window.importFromExcel = importFromExcel;
+window.handleSearch = handleSearch;
+window.clearSearch = clearSearch;
 
 /**
  * Update statistics on landing page
