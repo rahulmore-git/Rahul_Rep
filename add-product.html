@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - IT Inventory Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IT Inventory Manager</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="add-product.html" class="active">Add Product</a>
+                <a href="inventory.html">Inventory</a>
+            </nav>
+        </header>
+
+        <main>
+            <h2>Add New IT Product</h2>
+            
+            <form id="product-form" class="product-form">
+                <div class="form-group">
+                    <label for="name">Product Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="e.g., Dell XPS 13 Laptop">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select a category</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Desktop">Desktop</option>
+                        <option value="Monitor">Monitor</option>
+                        <option value="Keyboard">Keyboard</option>
+                        <option value="Mouse">Mouse</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Network Device">Network Device</option>
+                        <option value="Server">Server</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Quantity *</label>
+                    <input type="number" id="quantity" name="quantity" required min="0" placeholder="e.g., 5">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4" placeholder="Optional: Add product details, specifications, or notes"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                    <a href="inventory.html" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+
+            <div id="message" class="message" style="display: none;"></div>
+        </main>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Handle form submission
+        document.getElementById('product-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const product = {
+                id: Date.now(), // Simple ID generation
+                name: document.getElementById('name').value.trim(),
+                category: document.getElementById('category').value,
+                quantity: parseInt(document.getElementById('quantity').value),
+                description: document.getElementById('description').value.trim(),
+                dateAdded: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+            };
+
+            if (saveProduct(product)) {
+                showMessage('Product added successfully!', 'success');
+                document.getElementById('product-form').reset();
+                
+                // Redirect to inventory after 1.5 seconds
+                setTimeout(() => {
+                    window.location.href = 'inventory.html';
+                }, 1500);
+            } else {
+                showMessage('Error saving product. Please try again.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory - IT Inventory Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IT Inventory Manager</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="add-product.html">Add Product</a>
+                <a href="inventory.html" class="active">Inventory</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="page-header">
+                <h2>Inventory</h2>
+                <a href="add-product.html" class="btn btn-primary">➕ Add Product</a>
+            </div>
+
+            <div id="inventory-container">
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <p>📦 No products in inventory yet.</p>
+                    <a href="add-product.html" class="btn btn-primary">Add Your First Product</a>
+                </div>
+
+                <div id="inventory-list" class="inventory-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Load and display inventory on page load
+        displayInventory();
+    </script>
+</body>
+</html>
+

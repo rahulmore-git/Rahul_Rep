@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Inventory Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IT Inventory Manager</h1>
+            <p class="subtitle">Simple inventory tracking for IT products</p>
+        </header>
+
+        <main class="landing">
+            <div class="hero">
+                <h2>Welcome to IT Inventory Manager</h2>
+                <p>Manage your IT product inventory with ease. Track products, quantities, and categories all in one place.</p>
+            </div>
+
+            <div class="actions">
+                <a href="add-product.html" class="btn btn-primary">
+                    ➕ Add New Product
+                </a>
+                <a href="inventory.html" class="btn btn-secondary">
+                    📦 View Inventory
+                </a>
+            </div>
+
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-products">0</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-items">0</div>
+                    <div class="stat-label">Total Items</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Load stats on page load
+        updateStats();
+    </script>
+</body>
+</html>
+
