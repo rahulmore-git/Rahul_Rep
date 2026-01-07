@@ -268,6 +268,12 @@ function handleEditSubmit(e) {
         description: document.getElementById('edit-description').value.trim()
     };
 
+    // Enforce unique user per company, excluding current record
+    if (isDuplicateUser(updatedProduct.user, productId)) {
+        showMessage('This user already exists for the selected company. Please use a unique user.', 'error');
+        return;
+    }
+
     if (updateProduct(productId, updatedProduct)) {
         showMessage('Product updated successfully!', 'success');
         closeEditModal();

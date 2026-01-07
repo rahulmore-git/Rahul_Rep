@@ -124,6 +124,12 @@
                 dateAdded: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
             };
 
+            // Enforce unique user per company
+            if (isDuplicateUser(product.user)) {
+                showMessage('This user already exists for the selected company. Please use a unique user.', 'error');
+                return;
+            }
+
             if (saveProduct(product)) {
                 showMessage('Product added successfully!', 'success');
                 document.getElementById('product-form').reset();
