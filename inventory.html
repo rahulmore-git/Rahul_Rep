@@ -97,6 +97,26 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="edit-warrantyExpiryDate">Warranty Expiry Date</label>
+                    <input type="date" id="edit-warrantyExpiryDate" name="warrantyExpiryDate" placeholder="Select warranty expiry date">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-cpu">CPU</label>
+                    <input type="text" id="edit-cpu" name="cpu" placeholder="e.g., Intel Core i7, AMD Ryzen 5">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-ram">RAM</label>
+                    <input type="text" id="edit-ram" name="ram" placeholder="e.g., 8GB, 16GB DDR4">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-hdd">HDD</label>
+                    <input type="text" id="edit-hdd" name="hdd" placeholder="e.g., 256GB SSD, 1TB HDD">
+                </div>
+
+                <div class="form-group">
                     <label for="edit-description">Description</label>
                     <textarea id="edit-description" name="description" rows="4" placeholder="Optional: Add product details, specifications, or notes"></textarea>
                 </div>
@@ -127,6 +147,9 @@
             if (companySwitcher) {
                 companySwitcher.value = company;
             }
+            
+            // Show warranty expiry warning
+            showWarrantyWarning();
             
             displayInventory();
         };

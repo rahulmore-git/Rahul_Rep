@@ -716,3 +716,13 @@ main h2 {
     max-width: none;
 }
 
+.warranty-warning {
+    color: #ff9800;
+    font-weight: 600;
+}
+
+.warranty-expired {
+    color: #f44336;
+    font-weight: 600;
+}
+

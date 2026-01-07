@@ -165,6 +165,30 @@ function createProductCard(product) {
                         <span class="info-label">User:</span>
                         <span class="info-value">${product.user || 'N/A'}</span>
                     </div>
+                    ${product.warrantyExpiryDate ? `
+                    <div class="info-item">
+                        <span class="info-label">Warranty Expiry:</span>
+                        <span class="info-value ${getWarrantyStatusClass(product.warrantyExpiryDate)}">${formatDate(product.warrantyExpiryDate)}</span>
+                    </div>
+                    ` : ''}
+                    ${product.cpu ? `
+                    <div class="info-item">
+                        <span class="info-label">CPU:</span>
+                        <span class="info-value">${escapeHtml(product.cpu)}</span>
+                    </div>
+                    ` : ''}
+                    ${product.ram ? `
+                    <div class="info-item">
+                        <span class="info-label">RAM:</span>
+                        <span class="info-value">${escapeHtml(product.ram)}</span>
+                    </div>
+                    ` : ''}
+                    ${product.hdd ? `
+                    <div class="info-item">
+                        <span class="info-label">HDD:</span>
+                        <span class="info-value">${escapeHtml(product.hdd)}</span>
+                    </div>
+                    ` : ''}
                     ${product.description ? `
                     <div class="info-item">
                         <span class="info-label">Description:</span>
@@ -206,6 +230,10 @@ function openEditModal(productId) {
     document.getElementById('edit-name').value = product.name;
     document.getElementById('edit-category').value = product.category || '';
     document.getElementById('edit-user').value = product.user || '';
+    document.getElementById('edit-warrantyExpiryDate').value = product.warrantyExpiryDate || '';
+    document.getElementById('edit-cpu').value = product.cpu || '';
+    document.getElementById('edit-ram').value = product.ram || '';
+    document.getElementById('edit-hdd').value = product.hdd || '';
     document.getElementById('edit-description').value = product.description || '';
 
     // Show modal
@@ -227,21 +255,16 @@ function handleEditSubmit(e) {
     e.preventDefault();
 
     const productId = parseInt(document.getElementById('edit-id').value);
-    const userName = document.getElementById('edit-user').value.trim();
-    
-    // Check for duplicate user (excluding current product)
-    if (isDuplicateUser(userName, productId)) {
-        showMessage('A product is already assigned to this user. Please use a different user.', 'error');
-        document.getElementById('edit-user').focus();
-        return;
-    }
-    
     const company = getSelectedCompany();
     const updatedProduct = {
         company: company, // Always use selected company
         name: document.getElementById('edit-name').value.trim(),
         category: document.getElementById('edit-category').value,
-        user: userName,
+        user: document.getElementById('edit-user').value.trim(),
+        warrantyExpiryDate: document.getElementById('edit-warrantyExpiryDate').value || '',
+        cpu: document.getElementById('edit-cpu').value.trim() || '',
+        ram: document.getElementById('edit-ram').value.trim() || '',
+        hdd: document.getElementById('edit-hdd').value.trim() || '',
         description: document.getElementById('edit-description').value.trim()
     };
 
@@ -306,7 +329,7 @@ function exportToExcel() {
     }
 
     // Create CSV content
-    const headers = ['ID', 'Company', 'Product Name', 'Category', 'User', 'Description', 'Date Added'];
+    const headers = ['ID', 'Company', 'Product Name', 'Category', 'User', 'Warranty Expiry Date', 'CPU', 'RAM', 'HDD', 'Description', 'Date Added'];
     const csvRows = [headers.join(',')];
 
     products.forEach(product => {
@@ -316,6 +339,10 @@ function exportToExcel() {
             escapeCsvField(product.name || ''),
             escapeCsvField(product.category || ''),
             escapeCsvField(product.user || ''),
+            product.warrantyExpiryDate || '',
+            escapeCsvField(product.cpu || ''),
+            escapeCsvField(product.ram || ''),
+            escapeCsvField(product.hdd || ''),
             escapeCsvField(product.description || ''),
             product.dateAdded || ''
         ];
@@ -396,7 +423,7 @@ function parseCSV(csvContent) {
     const headers = parseCSVLine(lines[0]);
     
     // Expected headers (case-insensitive)
-    const expectedHeaders = ['id', 'company', 'product name', 'category', 'user', 'description', 'date added'];
+    const expectedHeaders = ['id', 'company', 'product name', 'category', 'user', 'warranty expiry date', 'cpu', 'ram', 'hdd', 'description', 'date added'];
     const headerMap = {};
     
     headers.forEach((header, index) => {
@@ -561,12 +588,6 @@ function importFromExcel(event) {
                         product.id = generateUniqueId();
                     }
                     
-                    // Check for duplicate user within this company
-                    if (isDuplicateUser(product.user)) {
-                        errorCount++;
-                        return; // Skip this product
-                    }
-                    
                     if (saveProduct(product)) {
                         successCount++;
                     } else {
@@ -583,36 +604,21 @@ function importFromExcel(event) {
                     }
                 }
 
-                // Check for duplicate users within the import file itself
-                const userSet = new Set();
-                const uniqueProducts = [];
-                const duplicateUsers = [];
-
+                // Ensure company is set for all products
                 products.forEach(product => {
-                    product.company = company; // Ensure company is set
-                    const normalizedUser = (product.user || '').trim().toLowerCase();
-                    if (userSet.has(normalizedUser)) {
-                        duplicateUsers.push(product.user);
-                    } else {
-                        userSet.add(normalizedUser);
-                        uniqueProducts.push(product);
-                    }
+                    product.company = company;
                 });
-
-                if (duplicateUsers.length > 0) {
-                    alert(`Found ${duplicateUsers.length} duplicate user(s) in the import file. They will be skipped.\n\nDuplicates: ${duplicateUsers.slice(0, 5).join(', ')}${duplicateUsers.length > 5 ? '...' : ''}`);
-                }
 
                 // Delete existing products for this company
                 const allProducts = getAllProducts();
                 const otherCompanyProducts = allProducts.filter(p => p.company !== company);
                 
                 // Save other company products + new imported products
-                const finalProducts = [...otherCompanyProducts, ...uniqueProducts];
+                const finalProducts = [...otherCompanyProducts, ...products];
                 saveAllProducts(finalProducts);
 
                 // Count success
-                successCount = uniqueProducts.length;
+                successCount = products.length;
             }
 
             // Refresh display
@@ -665,6 +671,7 @@ window.exportToExcel = exportToExcel;
 window.importFromExcel = importFromExcel;
 window.handleSearch = handleSearch;
 window.clearSearch = clearSearch;
+window.showWarrantyWarning = showWarrantyWarning;
 
 /**
  * Update statistics on landing page
@@ -728,5 +735,71 @@ function formatDate(dateString) {
     } catch (e) {
         return dateString;
     }
+}
+
+/**
+ * Get warranty status class for styling
+ * @param {string} expiryDate - Warranty expiry date
+ * @returns {string} CSS class name
+ */
+function getWarrantyStatusClass(expiryDate) {
+    if (!expiryDate) return '';
+    
+    const expiry = new Date(expiryDate);
+    const today = new Date();
+    const diffTime = expiry - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return 'warranty-expired';
+    if (diffDays <= 10) return 'warranty-warning';
+    return '';
+}
+
+/**
+ * Check for products with warranty expiring within 10 days
+ * @returns {Array} Array of products with expiring warranties
+ */
+function getExpiringWarranties() {
+    const company = getSelectedCompany();
+    if (!company) return [];
+    
+    const products = getProductsByCompany(company);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tenDaysLater = new Date(today);
+    tenDaysLater.setDate(today.getDate() + 10);
+    
+    return products.filter(product => {
+        if (!product.warrantyExpiryDate) return false;
+        
+        const expiryDate = new Date(product.warrantyExpiryDate);
+        expiryDate.setHours(0, 0, 0, 0);
+        
+        return expiryDate >= today && expiryDate <= tenDaysLater;
+    });
+}
+
+/**
+ * Show warranty expiry warning popup
+ */
+function showWarrantyWarning() {
+    const expiringProducts = getExpiringWarranties();
+    
+    if (expiringProducts.length === 0) return;
+    
+    let message = `⚠️ Warranty Expiry Warning\n\n`;
+    message += `The following ${expiringProducts.length} product(s) have warranty expiring within 10 days:\n\n`;
+    
+    expiringProducts.forEach(product => {
+        const expiryDate = formatDate(product.warrantyExpiryDate);
+        const expiry = new Date(product.warrantyExpiryDate);
+        const today = new Date();
+        const diffTime = expiry - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        message += `• ${product.name} (User: ${product.user}) - Expires: ${expiryDate} (${diffDays} day${diffDays !== 1 ? 's' : ''} remaining)\n`;
+    });
+    
+    alert(message);
 }
 

@@ -54,6 +54,26 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="warrantyExpiryDate">Warranty Expiry Date</label>
+                    <input type="date" id="warrantyExpiryDate" name="warrantyExpiryDate" placeholder="Select warranty expiry date">
+                </div>
+
+                <div class="form-group">
+                    <label for="cpu">CPU</label>
+                    <input type="text" id="cpu" name="cpu" placeholder="e.g., Intel Core i7, AMD Ryzen 5">
+                </div>
+
+                <div class="form-group">
+                    <label for="ram">RAM</label>
+                    <input type="text" id="ram" name="ram" placeholder="e.g., 8GB, 16GB DDR4">
+                </div>
+
+                <div class="form-group">
+                    <label for="hdd">HDD</label>
+                    <input type="text" id="hdd" name="hdd" placeholder="e.g., 256GB SSD, 1TB HDD">
+                </div>
+
+                <div class="form-group">
                     <label for="description">Description</label>
                     <textarea id="description" name="description" rows="4" placeholder="Optional: Add product details, specifications, or notes"></textarea>
                 </div>
@@ -80,20 +100,14 @@
             }
             // Set company field to selected company
             document.getElementById('company').value = company;
+            
+            // Show warranty expiry warning
+            showWarrantyWarning();
         };
 
         // Handle form submission
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const userName = document.getElementById('user').value.trim();
-            
-            // Check for duplicate user
-            if (isDuplicateUser(userName)) {
-                showMessage('A product is already assigned to this user. Please use a different user.', 'error');
-                document.getElementById('user').focus();
-                return;
-            }
             
             const company = getSelectedCompany();
             const product = {
@@ -101,7 +115,11 @@
                 company: company, // Use selected company
                 name: document.getElementById('name').value.trim(),
                 category: document.getElementById('category').value,
-                user: userName,
+                user: document.getElementById('user').value.trim(),
+                warrantyExpiryDate: document.getElementById('warrantyExpiryDate').value || '',
+                cpu: document.getElementById('cpu').value.trim() || '',
+                ram: document.getElementById('ram').value.trim() || '',
+                hdd: document.getElementById('hdd').value.trim() || '',
                 description: document.getElementById('description').value.trim(),
                 dateAdded: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
             };
