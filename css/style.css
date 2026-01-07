@@ -137,11 +137,31 @@ main h2 {
     font-size: 1rem;
     font-family: inherit;
     transition: border-color 0.3s;
+    margin-bottom: 20px;
 }
 
 .company-select:focus {
     outline: none;
     border-color: #0d47a1;
+}
+
+.proceed-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.proceed-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #6c757d;
+}
+
+.proceed-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .selected-company-info {

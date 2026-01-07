@@ -23,7 +23,7 @@
             <div id="company-selection" class="company-selection">
                 <h3>Select Company</h3>
                 <p>Please select a company to access inventory features</p>
-                <select id="company-select" class="company-select" onchange="selectCompany()">
+                <select id="company-select" class="company-select" onchange="enableProceedButton()">
                     <option value="">-- Select Company --</option>
                     <option value="TGLS">TGLS</option>
                     <option value="Transworld Terminals">Transworld Terminals</option>
@@ -31,6 +31,9 @@
                     <option value="BLPL">BLPL</option>
                     <option value="TLPL">TLPL</option>
                 </select>
+                <button id="proceed-btn" class="btn btn-primary proceed-btn" onclick="proceedToInventory()" disabled>
+                    Proceed to Inventory
+                </button>
             </div>
         </main>
     </div>
@@ -38,16 +41,37 @@
     <script src="js/storage.js"></script>
     <script src="js/app.js"></script>
     <script>
-        function selectCompany() {
+        function enableProceedButton() {
+            const companySelect = document.getElementById('company-select');
+            const proceedBtn = document.getElementById('proceed-btn');
+            const selectedCompany = companySelect.value;
+            
+            if (selectedCompany) {
+                proceedBtn.disabled = false;
+            } else {
+                proceedBtn.disabled = true;
+            }
+        }
+
+        function proceedToInventory() {
             const companySelect = document.getElementById('company-select');
             const selectedCompany = companySelect.value;
             
             if (selectedCompany) {
                 setSelectedCompany(selectedCompany);
-                // Redirect to inventory page after selecting company
+                // Redirect to inventory page
                 window.location.href = 'inventory.html';
             }
         }
+
+        // Check if company is already selected on page load
+        window.onload = function() {
+            const selectedCompany = getSelectedCompany();
+            if (selectedCompany) {
+                document.getElementById('company-select').value = selectedCompany;
+                enableProceedButton();
+            }
+        };
     </script>
 </body>
 </html>
