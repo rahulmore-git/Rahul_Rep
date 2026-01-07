@@ -24,14 +24,7 @@
             <form id="product-form" class="product-form">
                 <div class="form-group">
                     <label for="company">Company *</label>
-                    <select id="company" name="company" required>
-                        <option value="">Select a company</option>
-                        <option value="TGLS">TGLS</option>
-                        <option value="Transworld Terminals">Transworld Terminals</option>
-                        <option value="SOL">SOL</option>
-                        <option value="BLPL">BLPL</option>
-                        <option value="TLPL">TLPL</option>
-                    </select>
+                    <input type="text" id="company" name="company" readonly value="" style="background: #f0f0f0; cursor: not-allowed;">
                 </div>
 
                 <div class="form-group">
@@ -78,6 +71,17 @@
     <script src="js/storage.js"></script>
     <script src="js/app.js"></script>
     <script>
+        // Check if company is selected
+        window.onload = function() {
+            const company = getSelectedCompany();
+            if (!company) {
+                window.location.href = 'index.html';
+                return;
+            }
+            // Set company field to selected company
+            document.getElementById('company').value = company;
+        };
+
         // Handle form submission
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -91,9 +95,10 @@
                 return;
             }
             
+            const company = getSelectedCompany();
             const product = {
                 id: generateUniqueId(), // Generate unique ID starting from 100
-                company: document.getElementById('company').value,
+                company: company, // Use selected company
                 name: document.getElementById('name').value.trim(),
                 category: document.getElementById('category').value,
                 user: userName,

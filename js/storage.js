@@ -3,14 +3,35 @@
  */
 
 const STORAGE_KEY = 'it_inventory_products';
+const SELECTED_COMPANY_KEY = 'selected_company';
 const STARTING_ID = 100;
+
+/**
+ * Get the currently selected company
+ * @returns {string|null} Selected company name or null
+ */
+function getSelectedCompany() {
+    return sessionStorage.getItem(SELECTED_COMPANY_KEY);
+}
+
+/**
+ * Set the selected company
+ * @param {string} company - Company name to set
+ */
+function setSelectedCompany(company) {
+    if (company) {
+        sessionStorage.setItem(SELECTED_COMPANY_KEY, company);
+    } else {
+        sessionStorage.removeItem(SELECTED_COMPANY_KEY);
+    }
+}
 
 /**
  * Generate the next unique ID starting from 100
  * @returns {number} Next available unique ID
  */
 function generateUniqueId() {
-    const products = getAllProducts();
+    const products = getProductsByCompany(getSelectedCompany());
     
     if (products.length === 0) {
         return STARTING_ID;
@@ -33,6 +54,17 @@ function generateUniqueId() {
 function getAllProducts() {
     const products = localStorage.getItem(STORAGE_KEY);
     return products ? JSON.parse(products) : [];
+}
+
+/**
+ * Get products filtered by company
+ * @param {string} company - Company name to filter by
+ * @returns {Array} Array of product objects for the specified company
+ */
+function getProductsByCompany(company) {
+    if (!company) return [];
+    const allProducts = getAllProducts();
+    return allProducts.filter(product => product.company === company);
 }
 
 /**
@@ -71,7 +103,7 @@ function getProductById(id) {
 }
 
 /**
- * Check if a user already exists (case-insensitive)
+ * Check if a user already exists (case-insensitive) for the current company
  * @param {string} user - User name to check
  * @param {number} excludeId - Optional ID to exclude from check (for updates)
  * @returns {boolean} True if duplicate exists, false otherwise
@@ -81,7 +113,10 @@ function isDuplicateUser(user, excludeId = null) {
         return false;
     }
     
-    const products = getAllProducts();
+    const company = getSelectedCompany();
+    if (!company) return false;
+    
+    const products = getProductsByCompany(company);
     const normalizedUser = user.trim().toLowerCase();
     
     return products.some(product => {
@@ -126,19 +161,23 @@ function deleteProduct(id) {
 }
 
 /**
- * Get total count of products
+ * Get total count of products for current company
  * @returns {number} Total number of unique products
  */
 function getTotalProductCount() {
-    return getAllProducts().length;
+    const company = getSelectedCompany();
+    if (!company) return 0;
+    return getProductsByCompany(company).length;
 }
 
 /**
- * Get total number of users
+ * Get total number of users for current company
  * @returns {number} Count of unique users
  */
 function getTotalItemCount() {
-    const products = getAllProducts();
+    const company = getSelectedCompany();
+    if (!company) return 0;
+    const products = getProductsByCompany(company);
     const users = new Set();
     products.forEach(product => {
         if (product.user) {

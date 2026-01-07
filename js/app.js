@@ -12,7 +12,14 @@ function displayInventory(searchQuery = '') {
 
     if (!container) return;
 
-    // Get filtered products based on search query
+    // Check if company is selected
+    const company = getSelectedCompany();
+    if (!company) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Get filtered products based on search query for current company
     const filteredProducts = getFilteredProducts(searchQuery);
 
     if (filteredProducts.length === 0) {
@@ -68,12 +75,15 @@ function displayInventory(searchQuery = '') {
 }
 
 /**
- * Get filtered products based on search query
+ * Get filtered products based on search query for current company
  * @param {string} searchQuery - Search query string
  * @returns {Array} Filtered products
  */
 function getFilteredProducts(searchQuery = '') {
-    const products = getAllProducts();
+    const company = getSelectedCompany();
+    if (!company) return [];
+    
+    const products = getProductsByCompany(company);
     
     if (!searchQuery || searchQuery.trim() === '') {
         return products;
@@ -81,14 +91,12 @@ function getFilteredProducts(searchQuery = '') {
 
     const query = searchQuery.toLowerCase().trim();
     return products.filter(product => {
-        const company = (product.company || '').toLowerCase();
         const name = (product.name || '').toLowerCase();
         const category = (product.category || '').toLowerCase();
         const user = (product.user || '').toLowerCase();
         const description = (product.description || '').toLowerCase();
         
-        return company.includes(query) ||
-               name.includes(query) || 
+        return name.includes(query) || 
                category.includes(query) || 
                user.includes(query) || 
                description.includes(query);
@@ -192,8 +200,9 @@ function openEditModal(productId) {
     }
 
     // Populate form with product data
+    const company = getSelectedCompany();
     document.getElementById('edit-id').value = product.id;
-    document.getElementById('edit-company').value = product.company || '';
+    document.getElementById('edit-company').value = company || product.company || '';
     document.getElementById('edit-name').value = product.name;
     document.getElementById('edit-category').value = product.category || '';
     document.getElementById('edit-user').value = product.user || '';
@@ -227,8 +236,9 @@ function handleEditSubmit(e) {
         return;
     }
     
+    const company = getSelectedCompany();
     const updatedProduct = {
-        company: document.getElementById('edit-company').value,
+        company: company, // Always use selected company
         name: document.getElementById('edit-name').value.trim(),
         category: document.getElementById('edit-category').value,
         user: userName,
@@ -504,6 +514,14 @@ function importFromExcel(event) {
     
     reader.onload = function(e) {
         try {
+            const company = getSelectedCompany();
+            if (!company) {
+                showMessage('Please select a company first.', 'error');
+                window.location.href = 'index.html';
+                event.target.value = ''; // Reset file input
+                return;
+            }
+            
             const csvContent = e.target.result;
             const products = parseCSV(csvContent);
 
@@ -512,6 +530,11 @@ function importFromExcel(event) {
                 event.target.value = ''; // Reset file input
                 return;
             }
+            
+            // Assign selected company to all imported products
+            products.forEach(product => {
+                product.company = company;
+            });
 
             // Ask for confirmation
             const importMode = confirm(
@@ -527,14 +550,18 @@ function importFromExcel(event) {
             if (importMode) {
                 // Append mode - add new products
                 products.forEach(product => {
-                    // Check if product with same ID exists
-                    const existing = getProductById(product.id);
+                    // Ensure company is set to selected company
+                    product.company = company;
+                    
+                    // Check if product with same ID exists for this company
+                    const companyProducts = getProductsByCompany(company);
+                    const existing = companyProducts.find(p => p.id === product.id);
                     if (existing) {
                         // Generate new unique ID for duplicate
                         product.id = generateUniqueId();
                     }
                     
-                    // Check for duplicate user
+                    // Check for duplicate user within this company
                     if (isDuplicateUser(product.user)) {
                         errorCount++;
                         return; // Skip this product
@@ -547,10 +574,10 @@ function importFromExcel(event) {
                     }
                 });
             } else {
-                // Replace mode - clear and add new products
-                const allProducts = getAllProducts();
-                if (allProducts.length > 0) {
-                    if (!confirm('This will delete all existing inventory. Are you sure?')) {
+                // Replace mode - clear and add new products for this company only
+                const companyProducts = getProductsByCompany(company);
+                if (companyProducts.length > 0) {
+                    if (!confirm(`This will delete all existing inventory for ${company}. Are you sure?`)) {
                         event.target.value = ''; // Reset file input
                         return;
                     }
@@ -562,6 +589,7 @@ function importFromExcel(event) {
                 const duplicateUsers = [];
 
                 products.forEach(product => {
+                    product.company = company; // Ensure company is set
                     const normalizedUser = (product.user || '').trim().toLowerCase();
                     if (userSet.has(normalizedUser)) {
                         duplicateUsers.push(product.user);
@@ -575,17 +603,16 @@ function importFromExcel(event) {
                     alert(`Found ${duplicateUsers.length} duplicate user(s) in the import file. They will be skipped.\n\nDuplicates: ${duplicateUsers.slice(0, 5).join(', ')}${duplicateUsers.length > 5 ? '...' : ''}`);
                 }
 
-                // Clear existing products
-                saveAllProducts([]);
+                // Delete existing products for this company
+                const allProducts = getAllProducts();
+                const otherCompanyProducts = allProducts.filter(p => p.company !== company);
+                
+                // Save other company products + new imported products
+                const finalProducts = [...otherCompanyProducts, ...uniqueProducts];
+                saveAllProducts(finalProducts);
 
-                // Add imported products (only unique ones)
-                uniqueProducts.forEach(product => {
-                    if (saveProduct(product)) {
-                        successCount++;
-                    } else {
-                        errorCount++;
-                    }
-                });
+                // Count success
+                successCount = uniqueProducts.length;
             }
 
             // Refresh display

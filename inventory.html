@@ -57,14 +57,7 @@
                 
                 <div class="form-group">
                     <label for="edit-company">Company *</label>
-                    <select id="edit-company" name="company" required>
-                        <option value="">Select a company</option>
-                        <option value="TGLS">TGLS</option>
-                        <option value="Transworld Terminals">Transworld Terminals</option>
-                        <option value="SOL">SOL</option>
-                        <option value="BLPL">BLPL</option>
-                        <option value="TLPL">TLPL</option>
-                    </select>
+                    <input type="text" id="edit-company" name="company" readonly value="" style="background: #f0f0f0; cursor: not-allowed;">
                 </div>
 
                 <div class="form-group">
@@ -112,8 +105,21 @@
     <script src="js/storage.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // Load and display inventory on page load
-        displayInventory();
+        // Check if company is selected
+        window.onload = function() {
+            const company = getSelectedCompany();
+            if (!company) {
+                window.location.href = 'index.html';
+                return;
+            }
+            // Update header to show selected company
+            const companyInfo = document.createElement('div');
+            companyInfo.className = 'company-info';
+            companyInfo.innerHTML = `<span>Company: ${company}</span> | <a href="index.html" class="btn-link">Change Company</a>`;
+            document.querySelector('.page-header').appendChild(companyInfo);
+            
+            displayInventory();
+        };
 
         // Close modal when clicking outside of it
         window.onclick = function(event) {

@@ -20,7 +20,24 @@
                 <p>Manage your IT product inventory with ease. Track products, quantities, and categories all in one place.</p>
             </div>
 
-            <div class="actions">
+            <div id="company-selection" class="company-selection">
+                <h3>Select Company</h3>
+                <p>Please select a company to access inventory features</p>
+                <select id="company-select" class="company-select" onchange="selectCompany()">
+                    <option value="">-- Select Company --</option>
+                    <option value="TGLS">TGLS</option>
+                    <option value="Transworld Terminals">Transworld Terminals</option>
+                    <option value="SOL">SOL</option>
+                    <option value="BLPL">BLPL</option>
+                    <option value="TLPL">TLPL</option>
+                </select>
+            </div>
+
+            <div class="actions" id="actions" style="display: none;">
+                <div class="selected-company-info">
+                    <span id="selected-company-name"></span>
+                    <button onclick="changeCompany()" class="btn-link">Change Company</button>
+                </div>
                 <a href="add-product.html" class="btn btn-primary">
                     ➕ Add New Product
                 </a>
@@ -29,7 +46,7 @@
                 </a>
             </div>
 
-            <div class="stats" id="stats">
+            <div class="stats" id="stats" style="display: none;">
                 <div class="stat-card">
                     <div class="stat-number" id="total-products">0</div>
                     <div class="stat-label">Total Products</div>
@@ -45,8 +62,40 @@
     <script src="js/storage.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // Load stats on page load
-        updateStats();
+        // Check if company is already selected
+        window.onload = function() {
+            const selectedCompany = getSelectedCompany();
+            if (selectedCompany) {
+                document.getElementById('company-select').value = selectedCompany;
+                showCompanyOptions(selectedCompany);
+            }
+        };
+
+        function selectCompany() {
+            const companySelect = document.getElementById('company-select');
+            const selectedCompany = companySelect.value;
+            
+            if (selectedCompany) {
+                setSelectedCompany(selectedCompany);
+                showCompanyOptions(selectedCompany);
+            }
+        }
+
+        function showCompanyOptions(company) {
+            document.getElementById('company-selection').style.display = 'none';
+            document.getElementById('selected-company-name').textContent = `Company: ${company}`;
+            document.getElementById('actions').style.display = 'block';
+            document.getElementById('stats').style.display = 'flex';
+            updateStats();
+        }
+
+        function changeCompany() {
+            setSelectedCompany('');
+            document.getElementById('company-select').value = '';
+            document.getElementById('company-selection').style.display = 'block';
+            document.getElementById('actions').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+        }
     </script>
 </body>
 </html>
