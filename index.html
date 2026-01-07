@@ -26,15 +26,23 @@
                 <select id="company-select" class="company-select" onchange="enableProceedButton()">
                     <option value="">-- Select Company --</option>
                     <option value="TGLS">TGLS</option>
-                    <option value="Transworld Terminals - Nhavaseva">Transworld Terminals - Nhavaseva</option>
-                    <option value="Transworld Terminals - Mundra Unit 1">Transworld Terminals - Mundra Unit 1</option>
-                    <option value="Transworld Terminals - Mundra Unit 2">Transworld Terminals - Mundra Unit 2</option>
-                    <option value="Transworld Terminals - Kolkata">Transworld Terminals - Kolkata</option>
-                    <option value="Transworld Terminals - Dadri">Transworld Terminals - Dadri</option>
+                    <option value="Transworld Terminals">Transworld Terminals</option>
                     <option value="SOL">SOL</option>
                     <option value="BLPL">BLPL</option>
                     <option value="TLPL">TLPL</option>
                 </select>
+
+                <div id="branch-row" style="display: none; margin-top: 10px;">
+                    <h3>Select Branch</h3>
+                    <select id="branch-select" class="company-select" onchange="enableProceedButton()">
+                        <option value="">-- Select Branch --</option>
+                        <option value="Nhavaseva">Nhavaseva</option>
+                        <option value="Mundra Unit 1">Mundra Unit 1</option>
+                        <option value="Mundra Unit 2">Mundra Unit 2</option>
+                        <option value="Kolkata">Kolkata</option>
+                        <option value="Dadri">Dadri</option>
+                    </select>
+                </div>
                 <button id="proceed-btn" class="btn btn-primary proceed-btn" onclick="proceedToInventory()" disabled>
                     Proceed to Inventory
                 </button>
@@ -47,22 +55,35 @@
     <script>
         function enableProceedButton() {
             const companySelect = document.getElementById('company-select');
+            const branchRow = document.getElementById('branch-row');
+            const branchSelect = document.getElementById('branch-select');
             const proceedBtn = document.getElementById('proceed-btn');
             const selectedCompany = companySelect.value;
             
-            if (selectedCompany) {
-                proceedBtn.disabled = false;
+            // Show branch selection only for Transworld Terminals
+            if (selectedCompany === 'Transworld Terminals') {
+                branchRow.style.display = 'block';
+                const selectedBranch = branchSelect.value;
+                proceedBtn.disabled = !selectedBranch;
             } else {
-                proceedBtn.disabled = true;
+                branchRow.style.display = 'none';
+                branchSelect.value = '';
+                proceedBtn.disabled = !selectedCompany;
             }
         }
 
         function proceedToInventory() {
             const companySelect = document.getElementById('company-select');
+            const branchSelect = document.getElementById('branch-select');
             const selectedCompany = companySelect.value;
             
             if (selectedCompany) {
                 setSelectedCompany(selectedCompany);
+                if (selectedCompany === 'Transworld Terminals') {
+                    setSelectedBranch(branchSelect.value || '');
+                } else {
+                    setSelectedBranch('');
+                }
                 // Redirect to inventory page
                 window.location.href = 'inventory.html';
             }
@@ -71,9 +92,16 @@
         // Check if company is already selected on page load
         window.onload = function() {
             const selectedCompany = getSelectedCompany();
+            const savedBranch = getSelectedBranch && getSelectedBranch();
+            const branchSelect = document.getElementById('branch-select');
             if (selectedCompany) {
                 document.getElementById('company-select').value = selectedCompany;
+                // Ensure branch UI reflects state
                 enableProceedButton();
+                if (selectedCompany === 'Transworld Terminals' && savedBranch) {
+                    branchSelect.value = savedBranch;
+                    enableProceedButton();
+                }
             }
         };
     </script>

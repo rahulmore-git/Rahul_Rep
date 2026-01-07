@@ -4,6 +4,7 @@
 
 const STORAGE_KEY = 'it_inventory_products';
 const SELECTED_COMPANY_KEY = 'selected_company';
+const SELECTED_BRANCH_KEY = 'selected_branch';
 const STARTING_ID = 100;
 
 /**
@@ -23,6 +24,26 @@ function setSelectedCompany(company) {
         sessionStorage.setItem(SELECTED_COMPANY_KEY, company);
     } else {
         sessionStorage.removeItem(SELECTED_COMPANY_KEY);
+    }
+}
+
+/**
+ * Get the currently selected branch
+ * @returns {string|null} Selected branch or null
+ */
+function getSelectedBranch() {
+    return sessionStorage.getItem(SELECTED_BRANCH_KEY);
+}
+
+/**
+ * Set the selected branch
+ * @param {string} branch - Branch name to set
+ */
+function setSelectedBranch(branch) {
+    if (branch) {
+        sessionStorage.setItem(SELECTED_BRANCH_KEY, branch);
+    } else {
+        sessionStorage.removeItem(SELECTED_BRANCH_KEY);
     }
 }
 

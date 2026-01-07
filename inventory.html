@@ -26,14 +26,20 @@
                         <select id="company-switcher" class="company-select" onchange="switchCompany()">
                             <option value="">-- Select Company --</option>
                             <option value="TGLS">TGLS</option>
-                            <option value="Transworld Terminals - Nhavaseva">Transworld Terminals - Nhavaseva</option>
-                            <option value="Transworld Terminals - Mundra Unit 1">Transworld Terminals - Mundra Unit 1</option>
-                            <option value="Transworld Terminals - Mundra Unit 2">Transworld Terminals - Mundra Unit 2</option>
-                            <option value="Transworld Terminals - Kolkata">Transworld Terminals - Kolkata</option>
-                            <option value="Transworld Terminals - Dadri">Transworld Terminals - Dadri</option>
+                            <option value="Transworld Terminals">Transworld Terminals</option>
                             <option value="SOL">SOL</option>
                             <option value="BLPL">BLPL</option>
                             <option value="TLPL">TLPL</option>
+                        </select>
+                    </div>
+                    <div class="company-selector" id="branch-switcher-row" style="display: none;">
+                        <select id="branch-switcher" class="company-select" onchange="switchBranch()">
+                            <option value="">-- Select Branch --</option>
+                            <option value="Nhavaseva">Nhavaseva</option>
+                            <option value="Mundra Unit 1">Mundra Unit 1</option>
+                            <option value="Mundra Unit 2">Mundra Unit 2</option>
+                            <option value="Kolkata">Kolkata</option>
+                            <option value="Dadri">Dadri</option>
                         </select>
                     </div>
                     <button onclick="document.getElementById('import-file').click()" class="btn btn-secondary">📥 Import from Excel</button>
@@ -151,6 +157,20 @@
             if (companySwitcher) {
                 companySwitcher.value = company;
             }
+            // Setup branch switcher visibility and value
+            const branchRow = document.getElementById('branch-switcher-row');
+            const branchSwitcher = document.getElementById('branch-switcher');
+            if (company === 'Transworld Terminals') {
+                branchRow.style.display = 'block';
+                const savedBranch = getSelectedBranch && getSelectedBranch();
+                if (savedBranch) {
+                    branchSwitcher.value = savedBranch;
+                }
+            } else {
+                branchRow.style.display = 'none';
+                branchSwitcher.value = '';
+                setSelectedBranch('');
+            }
             
             // Show warranty expiry warning
             showWarrantyWarning();
@@ -164,12 +184,24 @@
             
             if (selectedCompany) {
                 setSelectedCompany(selectedCompany);
+                // Manage branch UI and reset branch if needed
+                if (selectedCompany !== 'Transworld Terminals') {
+                    setSelectedBranch('');
+                }
                 // Reload the page to show new company's inventory
                 window.location.reload();
             } else {
                 // If no company selected, go back to home
                 window.location.href = 'index.html';
             }
+        }
+
+        function switchBranch() {
+            const branchSwitcher = document.getElementById('branch-switcher');
+            const selectedBranch = branchSwitcher.value;
+            setSelectedBranch(selectedBranch || '');
+            // Reload to reflect any branch-specific UI in future
+            window.location.reload();
         }
 
         // Close modal when clicking outside of it
