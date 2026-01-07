@@ -32,69 +32,21 @@
                     <option value="TLPL">TLPL</option>
                 </select>
             </div>
-
-            <div class="actions" id="actions" style="display: none;">
-                <div class="selected-company-info">
-                    <span id="selected-company-name"></span>
-                    <button onclick="changeCompany()" class="btn-link">Change Company</button>
-                </div>
-                <a href="add-product.html" class="btn btn-primary">
-                    ➕ Add New Product
-                </a>
-                <a href="inventory.html" class="btn btn-secondary">
-                    📦 View Inventory
-                </a>
-            </div>
-
-            <div class="stats" id="stats" style="display: none;">
-                <div class="stat-card">
-                    <div class="stat-number" id="total-products">0</div>
-                    <div class="stat-label">Total Products</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="total-items">0</div>
-                    <div class="stat-label">Total Users</div>
-                </div>
-            </div>
         </main>
     </div>
 
     <script src="js/storage.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // Check if company is already selected
-        window.onload = function() {
-            const selectedCompany = getSelectedCompany();
-            if (selectedCompany) {
-                document.getElementById('company-select').value = selectedCompany;
-                showCompanyOptions(selectedCompany);
-            }
-        };
-
         function selectCompany() {
             const companySelect = document.getElementById('company-select');
             const selectedCompany = companySelect.value;
             
             if (selectedCompany) {
                 setSelectedCompany(selectedCompany);
-                showCompanyOptions(selectedCompany);
+                // Redirect to inventory page after selecting company
+                window.location.href = 'inventory.html';
             }
-        }
-
-        function showCompanyOptions(company) {
-            document.getElementById('company-selection').style.display = 'none';
-            document.getElementById('selected-company-name').textContent = `Company: ${company}`;
-            document.getElementById('actions').style.display = 'block';
-            document.getElementById('stats').style.display = 'flex';
-            updateStats();
-        }
-
-        function changeCompany() {
-            setSelectedCompany('');
-            document.getElementById('company-select').value = '';
-            document.getElementById('company-selection').style.display = 'block';
-            document.getElementById('actions').style.display = 'none';
-            document.getElementById('stats').style.display = 'none';
         }
     </script>
 </body>

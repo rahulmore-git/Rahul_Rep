@@ -22,6 +22,16 @@
             <div class="page-header">
                 <h2>Inventory</h2>
                 <div class="page-actions">
+                    <div class="company-selector">
+                        <select id="company-switcher" class="company-select" onchange="switchCompany()">
+                            <option value="">-- Select Company --</option>
+                            <option value="TGLS">TGLS</option>
+                            <option value="Transworld Terminals">Transworld Terminals</option>
+                            <option value="SOL">SOL</option>
+                            <option value="BLPL">BLPL</option>
+                            <option value="TLPL">TLPL</option>
+                        </select>
+                    </div>
                     <button onclick="document.getElementById('import-file').click()" class="btn btn-secondary">📥 Import from Excel</button>
                     <input type="file" id="import-file" accept=".csv,.xls,.xlsx" style="display: none;" onchange="importFromExcel(event)">
                     <button onclick="exportToExcel()" class="btn btn-secondary" id="export-btn" title="Export all products or filtered search results">📊 Export to Excel</button>
@@ -112,14 +122,28 @@
                 window.location.href = 'index.html';
                 return;
             }
-            // Update header to show selected company
-            const companyInfo = document.createElement('div');
-            companyInfo.className = 'company-info';
-            companyInfo.innerHTML = `<span>Company: ${company}</span> | <a href="index.html" class="btn-link">Change Company</a>`;
-            document.querySelector('.page-header').appendChild(companyInfo);
+            // Set the company switcher to selected company
+            const companySwitcher = document.getElementById('company-switcher');
+            if (companySwitcher) {
+                companySwitcher.value = company;
+            }
             
             displayInventory();
         };
+
+        function switchCompany() {
+            const companySwitcher = document.getElementById('company-switcher');
+            const selectedCompany = companySwitcher.value;
+            
+            if (selectedCompany) {
+                setSelectedCompany(selectedCompany);
+                // Reload the page to show new company's inventory
+                window.location.reload();
+            } else {
+                // If no company selected, go back to home
+                window.location.href = 'index.html';
+            }
+        }
 
         // Close modal when clicking outside of it
         window.onclick = function(event) {

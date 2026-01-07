@@ -335,6 +335,30 @@ main h2 {
     flex-wrap: wrap;
 }
 
+.company-selector {
+    display: flex;
+    align-items: center;
+}
+
+.company-selector .company-select {
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.3s;
+    background: white;
+}
+
+.company-selector .company-select:focus {
+    outline: none;
+    border-color: #0d47a1;
+}
+
+.company-selector .company-select:hover {
+    border-color: #0d47a1;
+}
+
 /* Search Container */
 .search-container {
     display: flex;
