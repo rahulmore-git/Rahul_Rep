@@ -7,6 +7,13 @@ const SELECTED_COMPANY_KEY = 'selected_company';
 const SELECTED_BRANCH_KEY = 'selected_branch';
 const STARTING_ID = 100;
 
+// Remote DB (Supabase) configuration injected from HTML (set window.SUPABASE_URL/ANON_KEY)
+const SUPABASE_URL = typeof window !== 'undefined' ? window.SUPABASE_URL || '' : '';
+const SUPABASE_ANON_KEY = typeof window !== 'undefined' ? window.SUPABASE_ANON_KEY || '' : '';
+const SUPABASE_TABLE = 'inventory_products';
+
+let supabaseClient = null;
+
 /**
  * Get the currently selected company
  * @returns {string|null} Selected company name or null
@@ -110,7 +117,11 @@ function saveAllProducts(products) {
 function saveProduct(product) {
     const products = getAllProducts();
     products.push(product);
-    return saveAllProducts(products);
+    const saved = saveAllProducts(products);
+    if (saved) {
+        syncProductToRemote(product);
+    }
+    return saved;
 }
 
 /**
@@ -167,7 +178,11 @@ function updateProduct(id, updatedProduct) {
         dateAdded: products[index].dateAdded // Preserve original date
     };
     
-    return saveAllProducts(products);
+    const saved = saveAllProducts(products);
+    if (saved) {
+        syncProductToRemote(products[index]);
+    }
+    return saved;
 }
 
 /**
@@ -177,8 +192,13 @@ function updateProduct(id, updatedProduct) {
  */
 function deleteProduct(id) {
     const products = getAllProducts();
+    const product = products.find(p => p.id === id);
     const filtered = products.filter(p => p.id !== id);
-    return saveAllProducts(filtered);
+    const saved = saveAllProducts(filtered);
+    if (saved && product) {
+        deleteProductRemote(product);
+    }
+    return saved;
 }
 
 /**
@@ -206,5 +226,77 @@ function getTotalItemCount() {
         }
     });
     return users.size;
+}
+
+/**
+ * Initialize Supabase client if credentials are present
+ * @returns {boolean} true if client initialized, false otherwise
+ */
+function initSupabase() {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) {
+        return false;
+    }
+    if (!supabaseClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return !!supabaseClient;
+}
+
+/**
+ * Sync local storage from remote DB (overwrites local)
+ */
+async function initializeRemoteData() {
+    if (!initSupabase()) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from(SUPABASE_TABLE)
+            .select('*')
+            .order('id', { ascending: true });
+        if (error) {
+            console.warn('Remote sync skipped:', error.message);
+            return;
+        }
+        if (Array.isArray(data) && data.length > 0) {
+            saveAllProducts(data);
+        }
+    } catch (err) {
+        console.warn('Remote sync failed:', err.message);
+    }
+}
+
+/**
+ * Upsert a product to remote DB
+ */
+async function syncProductToRemote(product) {
+    if (!initSupabase() || !product) return;
+    try {
+        const payload = { ...product };
+        await supabaseClient
+            .from(SUPABASE_TABLE)
+            .upsert(payload, { onConflict: 'id,company' });
+    } catch (err) {
+        console.warn('Remote upsert failed:', err.message);
+    }
+}
+
+/**
+ * Delete a product from remote DB
+ */
+async function deleteProductRemote(product) {
+    if (!initSupabase() || !product) return;
+    try {
+        await supabaseClient
+            .from(SUPABASE_TABLE)
+            .delete()
+            .eq('id', product.id)
+            .eq('company', product.company || '');
+    } catch (err) {
+        console.warn('Remote delete failed:', err.message);
+    }
+}
+
+// Make remote initializer available globally
+if (typeof window !== 'undefined') {
+    window.initializeRemoteData = initializeRemoteData;
 }
 

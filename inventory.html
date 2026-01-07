@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory - IT Inventory Manager</title>
     <link rel="stylesheet" href="css/style.css">
+    <!-- Supabase configuration for shared storage -->
+    <script>
+        window.SUPABASE_URL = 'https://fqbxdsimxruqskeeydvm.supabase.co';
+        window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYnhkc2lteHJ1cXNrZWV5ZHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODAwMjQsImV4cCI6MjA4MzM1NjAyNH0.ubMTWBe2Ftr9tigT7ca8N36Ep_p4CxG17m5tPKqRd0Y';
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -146,7 +152,10 @@
     <script src="js/app.js"></script>
     <script>
         // Check if company is selected
-        window.onload = function() {
+        window.onload = async function() {
+            if (window.initializeRemoteData) {
+                await initializeRemoteData();
+            }
             const company = getSelectedCompany();
             if (!company) {
                 window.location.href = 'index.html';
