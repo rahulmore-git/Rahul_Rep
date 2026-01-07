@@ -23,6 +23,18 @@
             
             <form id="product-form" class="product-form">
                 <div class="form-group">
+                    <label for="company">Company *</label>
+                    <select id="company" name="company" required>
+                        <option value="">Select a company</option>
+                        <option value="TGLS">TGLS</option>
+                        <option value="Transworld Terminals">Transworld Terminals</option>
+                        <option value="SOL">SOL</option>
+                        <option value="BLPL">BLPL</option>
+                        <option value="TLPL">TLPL</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="name">Product Name *</label>
                     <input type="text" id="name" name="name" required placeholder="e.g., Dell XPS 13 Laptop">
                 </div>
@@ -70,20 +82,21 @@
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const productName = document.getElementById('name').value.trim();
+            const userName = document.getElementById('user').value.trim();
             
-            // Check for duplicate name
-            if (isDuplicateName(productName)) {
-                showMessage('A product with this name already exists. Please use a different name.', 'error');
-                document.getElementById('name').focus();
+            // Check for duplicate user
+            if (isDuplicateUser(userName)) {
+                showMessage('A product is already assigned to this user. Please use a different user.', 'error');
+                document.getElementById('user').focus();
                 return;
             }
             
             const product = {
                 id: generateUniqueId(), // Generate unique ID starting from 100
-                name: productName,
+                company: document.getElementById('company').value,
+                name: document.getElementById('name').value.trim(),
                 category: document.getElementById('category').value,
-                user: document.getElementById('user').value.trim(),
+                user: userName,
                 description: document.getElementById('description').value.trim(),
                 dateAdded: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
             };

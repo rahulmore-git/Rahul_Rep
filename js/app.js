@@ -81,12 +81,14 @@ function getFilteredProducts(searchQuery = '') {
 
     const query = searchQuery.toLowerCase().trim();
     return products.filter(product => {
+        const company = (product.company || '').toLowerCase();
         const name = (product.name || '').toLowerCase();
         const category = (product.category || '').toLowerCase();
         const user = (product.user || '').toLowerCase();
         const description = (product.description || '').toLowerCase();
         
-        return name.includes(query) || 
+        return company.includes(query) ||
+               name.includes(query) || 
                category.includes(query) || 
                user.includes(query) || 
                description.includes(query);
@@ -144,6 +146,10 @@ function createProductCard(product) {
             <div class="product-body">
                 <div class="product-info">
                     <div class="info-item">
+                        <span class="info-label">Company:</span>
+                        <span class="info-value">${product.company || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
                         <span class="info-label">Category:</span>
                         <span class="info-value">${product.category || 'N/A'}</span>
                     </div>
@@ -187,6 +193,7 @@ function openEditModal(productId) {
 
     // Populate form with product data
     document.getElementById('edit-id').value = product.id;
+    document.getElementById('edit-company').value = product.company || '';
     document.getElementById('edit-name').value = product.name;
     document.getElementById('edit-category').value = product.category || '';
     document.getElementById('edit-user').value = product.user || '';
@@ -211,19 +218,20 @@ function handleEditSubmit(e) {
     e.preventDefault();
 
     const productId = parseInt(document.getElementById('edit-id').value);
-    const productName = document.getElementById('edit-name').value.trim();
+    const userName = document.getElementById('edit-user').value.trim();
     
-    // Check for duplicate name (excluding current product)
-    if (isDuplicateName(productName, productId)) {
-        showMessage('A product with this name already exists. Please use a different name.', 'error');
-        document.getElementById('edit-name').focus();
+    // Check for duplicate user (excluding current product)
+    if (isDuplicateUser(userName, productId)) {
+        showMessage('A product is already assigned to this user. Please use a different user.', 'error');
+        document.getElementById('edit-user').focus();
         return;
     }
     
     const updatedProduct = {
-        name: productName,
+        company: document.getElementById('edit-company').value,
+        name: document.getElementById('edit-name').value.trim(),
         category: document.getElementById('edit-category').value,
-        user: document.getElementById('edit-user').value.trim(),
+        user: userName,
         description: document.getElementById('edit-description').value.trim()
     };
 
@@ -288,12 +296,13 @@ function exportToExcel() {
     }
 
     // Create CSV content
-    const headers = ['ID', 'Product Name', 'Category', 'User', 'Description', 'Date Added'];
+    const headers = ['ID', 'Company', 'Product Name', 'Category', 'User', 'Description', 'Date Added'];
     const csvRows = [headers.join(',')];
 
     products.forEach(product => {
         const row = [
             product.id || '',
+            escapeCsvField(product.company || ''),
             escapeCsvField(product.name || ''),
             escapeCsvField(product.category || ''),
             escapeCsvField(product.user || ''),
@@ -377,7 +386,7 @@ function parseCSV(csvContent) {
     const headers = parseCSVLine(lines[0]);
     
     // Expected headers (case-insensitive)
-    const expectedHeaders = ['id', 'product name', 'category', 'user', 'description', 'date added'];
+    const expectedHeaders = ['id', 'company', 'product name', 'category', 'user', 'description', 'date added'];
     const headerMap = {};
     
     headers.forEach((header, index) => {
@@ -416,6 +425,7 @@ function parseCSV(csvContent) {
         
         const product = {
             id: productId,
+            company: headerMap['company'] !== undefined ? values[headerMap['company']].trim() : '',
             name: headerMap['product name'] !== undefined ? values[headerMap['product name']].trim() : '',
             category: headerMap['category'] !== undefined ? values[headerMap['category']].trim() : '',
             user: headerMap['user'] !== undefined ? values[headerMap['user']].trim() : '',
@@ -424,7 +434,7 @@ function parseCSV(csvContent) {
         };
 
         // Validate required fields
-        if (!product.name || !product.category || !product.user) {
+        if (!product.name || !product.category || !product.user || !product.company) {
             continue; // Skip invalid rows
         }
 
@@ -524,8 +534,8 @@ function importFromExcel(event) {
                         product.id = generateUniqueId();
                     }
                     
-                    // Check for duplicate name
-                    if (isDuplicateName(product.name)) {
+                    // Check for duplicate user
+                    if (isDuplicateUser(product.user)) {
                         errorCount++;
                         return; // Skip this product
                     }
@@ -546,23 +556,23 @@ function importFromExcel(event) {
                     }
                 }
 
-                // Check for duplicate names within the import file itself
-                const nameSet = new Set();
+                // Check for duplicate users within the import file itself
+                const userSet = new Set();
                 const uniqueProducts = [];
-                const duplicateNames = [];
+                const duplicateUsers = [];
 
                 products.forEach(product => {
-                    const normalizedName = (product.name || '').trim().toLowerCase();
-                    if (nameSet.has(normalizedName)) {
-                        duplicateNames.push(product.name);
+                    const normalizedUser = (product.user || '').trim().toLowerCase();
+                    if (userSet.has(normalizedUser)) {
+                        duplicateUsers.push(product.user);
                     } else {
-                        nameSet.add(normalizedName);
+                        userSet.add(normalizedUser);
                         uniqueProducts.push(product);
                     }
                 });
 
-                if (duplicateNames.length > 0) {
-                    alert(`Found ${duplicateNames.length} duplicate name(s) in the import file. They will be skipped.\n\nDuplicates: ${duplicateNames.slice(0, 5).join(', ')}${duplicateNames.length > 5 ? '...' : ''}`);
+                if (duplicateUsers.length > 0) {
+                    alert(`Found ${duplicateUsers.length} duplicate user(s) in the import file. They will be skipped.\n\nDuplicates: ${duplicateUsers.slice(0, 5).join(', ')}${duplicateUsers.length > 5 ? '...' : ''}`);
                 }
 
                 // Clear existing products

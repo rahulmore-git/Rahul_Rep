@@ -71,22 +71,22 @@ function getProductById(id) {
 }
 
 /**
- * Check if a product name already exists (case-insensitive)
- * @param {string} name - Product name to check
+ * Check if a user already exists (case-insensitive)
+ * @param {string} user - User name to check
  * @param {number} excludeId - Optional ID to exclude from check (for updates)
  * @returns {boolean} True if duplicate exists, false otherwise
  */
-function isDuplicateName(name, excludeId = null) {
-    if (!name || !name.trim()) {
+function isDuplicateUser(user, excludeId = null) {
+    if (!user || !user.trim()) {
         return false;
     }
     
     const products = getAllProducts();
-    const normalizedName = name.trim().toLowerCase();
+    const normalizedUser = user.trim().toLowerCase();
     
     return products.some(product => {
-        const productName = (product.name || '').trim().toLowerCase();
-        const isDuplicate = productName === normalizedName;
+        const productUser = (product.user || '').trim().toLowerCase();
+        const isDuplicate = productUser === normalizedUser;
         const isExcluded = excludeId !== null && product.id === excludeId;
         return isDuplicate && !isExcluded;
     });
